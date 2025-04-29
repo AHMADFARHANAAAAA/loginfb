@@ -25,6 +25,9 @@
       cursor: pointer;
       margin-left: 10px;
     }
+    .todo-item button.edit-btn {
+      background-color: orange;
+    }
   </style>
 </head>
 <body>
@@ -136,8 +139,20 @@
           loadTodoList(userId);
         });
 
+        const editBtn = document.createElement("button");
+        editBtn.classList.add("edit-btn");
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", async () => {
+          const newTaskText = prompt("Edit your task:", taskData.task);
+          if (newTaskText && newTaskText.trim() !== taskData.task) {
+            await updateDoc(taskDoc.ref, { task: newTaskText.trim() });
+            loadTodoList(userId);
+          }
+        });
+
         li.appendChild(checkbox);
         li.appendChild(taskText);
+        li.appendChild(editBtn);
         li.appendChild(deleteBtn);
         todoListContainer.appendChild(li);
       });
