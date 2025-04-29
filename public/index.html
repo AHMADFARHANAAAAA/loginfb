@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login dengan Email</h2>
+  <form id="login-form">
+    <input type="email" id="login-email" placeholder="Email" required />
+    <br>
+    <br>
+    <input type="password" id="login-password" placeholder="Password" required />
+    <br>
+    <button type="submit">Login</button>
+  </form>
+
+  <br>
+  <button id="fb-login-btn">Login dengan Facebook</button>
+
+  <p>Belum punya akun? <a href="register.html">Daftar di sini</a></p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+    import {
+      getAuth,
+      signInWithPopup,
+      FacebookAuthProvider,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3ax-n3mvR5tzKlSynENQ_GifXfT1_eqc",
+      authDomain: "login-99056.firebaseapp.com",
+      projectId: "login-99056",
+      storageBucket: "login-99056.appspot.com",
+      messagingSenderId: "28630179435",
+      appId: "1:28630179435:web:da35ec7c422eaa7a759b2e",
+      measurementId: "G-ETQWDX27C2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+
+    // Login Facebook
+    const fbProvider = new FacebookAuthProvider();
+    document.getElementById("fb-login-btn").addEventListener("click", () => {
+      signInWithPopup(auth, fbProvider)
+        .then((result) => {
+          alert(`Login Facebook berhasil! Selamat datang, ${result.user.displayName}`);
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          alert("Login Facebook gagal: " + error.message);
+        });
+    });
+
+    // Login Email/Password
+    document.getElementById("login-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          alert(`Login berhasil! Selamat datang, ${userCredential.user.email}`);
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          let errorMessage = "Login gagal: ";
+          switch (error.code) {
+            case 'auth/user-not-found':
+              errorMessage += "Pengguna tidak ditemukan.";
+              break;
+            case 'auth/wrong-password':
+              errorMessage += "Password salah.";
+              break;
+            case 'auth/invalid-email':
+              errorMessage += "Email tidak valid.";
+              break;
+            default:
+              errorMessage += error.message;
+              break;
+          }
+          alert(errorMessage);
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <style>
+    #todo-list {
+      margin-top: 20px;
+    }
+    .todo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 5px 0;
+    }
+    .todo-item span.completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .todo-item button {
+      background-color: rgb(19, 244, 8);
+      color: white;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Selamat datang, <span id="username"></span></h2>
+
+  <h3>To-Do List</h3>
+  <input type="text" id="new-task" placeholder="Add a new task" />
+  <button id="add-task-btn">Add Task</button>
+
+  <ul id="todo-list"></ul>
+
+  <button id="logout-btn">Logout</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      updateDoc,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3ax-n3mvR5tzKlSynENQ_GifXfT1_eqc",
+      authDomain: "login-99056.firebaseapp.com",
+      projectId: "login-99056",
+      storageBucket: "login-99056.appspot.com",
+      messagingSenderId: "28630179435",
+      appId: "1:28630179435:web:da35ec7c422eaa7a759b2e",
+      measurementId: "G-ETQWDX27C2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const username = user.displayName;
+        if (!username) {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            document.getElementById("username").textContent = docSnap.data().username;
+          }
+        } else {
+          document.getElementById("username").textContent = username;
+        }
+
+        loadTodoList(user.uid);
+
+        document.getElementById("add-task-btn").addEventListener("click", async () => {
+          const newTask = document.getElementById("new-task").value.trim();
+          if (newTask) {
+            await addDoc(collection(db, "tasks"), {
+              userId: user.uid,
+              task: newTask,
+              completed: false
+            });
+            document.getElementById("new-task").value = "";
+            loadTodoList(user.uid);
+          }
+        });
+
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadTodoList(userId) {
+      const todoListContainer = document.getElementById("todo-list");
+      todoListContainer.innerHTML = "";
+
+      const tasksQuery = query(collection(db, "tasks"), where("userId", "==", userId));
+      const querySnapshot = await getDocs(tasksQuery);
+
+      querySnapshot.forEach((taskDoc) => {
+        const taskData = taskDoc.data();
+
+        const li = document.createElement("li");
+        li.classList.add("todo-item");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = taskData.completed;
+        checkbox.addEventListener("change", async () => {
+          await updateDoc(taskDoc.ref, { completed: checkbox.checked });
+          loadTodoList(userId);
+        });
+
+        const taskText = document.createElement("span");
+        taskText.textContent = taskData.task;
+        if (taskData.completed) {
+          taskText.classList.add("completed");
+        }
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Selesai";
+        deleteBtn.addEventListener("click", async () => {
+          await deleteDoc(taskDoc.ref);
+          loadTodoList(userId);
+        });
+
+        li.appendChild(checkbox);
+        li.appendChild(taskText);
+        li.appendChild(deleteBtn);
+        todoListContainer.appendChild(li);
+      });
+    }
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+</body>
+</html>
