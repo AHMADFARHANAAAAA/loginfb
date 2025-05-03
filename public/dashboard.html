@@ -1,53 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard</title>
-  <style>
-    #todo-list {
-      margin-top: 20px;
-    }
-    .todo-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 5px 0;
-    }
-    .todo-item span.completed {
-      text-decoration: line-through;
-      color: gray;
-    }
-    .todo-item button {
-      background-color: rgb(19, 244, 8);
-      color: white;
-      border: none;
-      padding: 5px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    .todo-item button.edit-btn {
-      background-color: orange;
-    }
-  </style>
-</head>
-<body>
-  <h2>Selamat datang, <span id="username"></span></h2>
-
-  <h3>To-Do List</h3>
-  <input type="text" id="new-task" placeholder="Add a new task" />
-  <button id="add-task-btn">Add Task</button>
-
-  <ul id="todo-list"></ul>
-
-  <button id="logout-btn">Logout</button>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Task Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import {
       getFirestore,
       doc,
-      setDoc,
       getDoc,
       collection,
       addDoc,
@@ -72,6 +35,84 @@
     const auth = getAuth();
     const db = getFirestore(app);
 
+    async function loadAllTasks(userId) {
+      const taskContainer = document.getElementById("task-container");
+      taskContainer.innerHTML = "";
+
+      const tasksQuery = query(collection(db, "tasks"), where("userId", "==", userId));
+      const querySnapshot = await getDocs(tasksQuery);
+
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach((taskDoc) => {
+          const taskData = taskDoc.data();
+
+          const card = document.createElement("div");
+          card.classList.add("bg-white", "shadow-md", "rounded-lg", "p-5", "mb-5", "w-[300px]", "max-w-full");
+
+          const taskTitle = document.createElement("h3");
+          taskTitle.classList.add("text-xl", "font-semibold", "text-gray-800");
+          taskTitle.textContent = taskData.task;
+
+          const taskContent = document.createElement("p");
+          taskContent.classList.add("text-gray-600", "text-sm", "mt-2");
+
+          const taskDate = document.createElement("p");
+          taskDate.classList.add("text-gray-400", "text-xs", "mt-1");
+
+          if (taskData.createdAt?.toDate) {
+            const date = taskData.createdAt.toDate();
+            const formattedDate = date.toLocaleDateString('id-ID', {
+              weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+            });
+            taskDate.textContent = "Dibuat: " + formattedDate;
+          } else {
+            taskDate.textContent = "Tanggal tidak tersedia";
+          }
+
+          const taskStatus = document.createElement("div");
+          taskStatus.classList.add("mt-3", "text-sm");
+          taskStatus.textContent = taskData.completed ? "Completed" : "Pending";
+          taskStatus.classList.add(taskData.completed ? "text-green-500" : "text-red-500");
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.classList.add("mt-3", "bg-red-600", "text-white", "px-3", "py-1", "rounded-lg");
+          deleteBtn.textContent = "Delete";
+          deleteBtn.addEventListener("click", async () => {
+            await deleteDoc(taskDoc.ref);
+            loadAllTasks(userId);
+          });
+
+          const editBtn = document.createElement("button");
+          editBtn.classList.add("mt-3", "ml-2", "bg-yellow-500", "text-white", "px-3", "py-1", "rounded-lg");
+          editBtn.textContent = "Edit";
+          editBtn.addEventListener("click", async () => {
+            const newTaskName = prompt("Edit task:", taskData.task);
+            if (newTaskName) {
+              await updateDoc(taskDoc.ref, {
+                task: newTaskName,
+                createdAt: new Date()
+              });
+              loadAllTasks(userId);
+            }
+          });
+
+          card.appendChild(taskTitle);
+          card.appendChild(taskContent);
+          card.appendChild(taskDate);
+          card.appendChild(taskStatus);
+          card.appendChild(deleteBtn);
+          card.appendChild(editBtn);
+
+          taskContainer.appendChild(card);
+        });
+      } else {
+        const noTasks = document.createElement("p");
+        noTasks.classList.add("text-center", "text-gray-500");
+        noTasks.textContent = "No tasks found.";
+        taskContainer.appendChild(noTasks);
+      }
+    }
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const username = user.displayName;
@@ -85,7 +126,7 @@
           document.getElementById("username").textContent = username;
         }
 
-        loadTodoList(user.uid);
+        loadAllTasks(user.uid);
 
         document.getElementById("add-task-btn").addEventListener("click", async () => {
           const newTask = document.getElementById("new-task").value.trim();
@@ -93,76 +134,78 @@
             await addDoc(collection(db, "tasks"), {
               userId: user.uid,
               task: newTask,
-              completed: false
+              completed: false,
+              createdAt: new Date()
             });
             document.getElementById("new-task").value = "";
-            loadTodoList(user.uid);
+            loadAllTasks(user.uid);
           }
+        });
+
+        document.getElementById("logout-btn")?.addEventListener("click", () => {
+          signOut(auth).then(() => {
+            window.location.href = "index.html";
+          });
         });
 
       } else {
-        window.location.href = "index.html";
+        // window.location.href = "index.html";
       }
     });
 
-    async function loadTodoList(userId) {
-      const todoListContainer = document.getElementById("todo-list");
-      todoListContainer.innerHTML = "";
-
-      const tasksQuery = query(collection(db, "tasks"), where("userId", "==", userId));
-      const querySnapshot = await getDocs(tasksQuery);
-
-      querySnapshot.forEach((taskDoc) => {
-        const taskData = taskDoc.data();
-
-        const li = document.createElement("li");
-        li.classList.add("todo-item");
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = taskData.completed;
-        checkbox.addEventListener("change", async () => {
-          await updateDoc(taskDoc.ref, { completed: checkbox.checked });
-          loadTodoList(userId);
-        });
-
-        const taskText = document.createElement("span");
-        taskText.textContent = taskData.task;
-        if (taskData.completed) {
-          taskText.classList.add("completed");
-        }
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Selesai";
-        deleteBtn.addEventListener("click", async () => {
-          await deleteDoc(taskDoc.ref);
-          loadTodoList(userId);
-        });
-
-        const editBtn = document.createElement("button");
-        editBtn.classList.add("edit-btn");
-        editBtn.textContent = "Edit";
-        editBtn.addEventListener("click", async () => {
-          const newTaskText = prompt("Edit your task:", taskData.task);
-          if (newTaskText && newTaskText.trim() !== taskData.task) {
-            await updateDoc(taskDoc.ref, { task: newTaskText.trim() });
-            loadTodoList(userId);
-          }
-        });
-
-        li.appendChild(checkbox);
-        li.appendChild(taskText);
-        li.appendChild(editBtn);
-        li.appendChild(deleteBtn);
-        todoListContainer.appendChild(li);
-      });
+    function setCurrentDate() {
+      const dateElement = document.getElementById("current-date");
+      if (dateElement) {
+        const now = new Date();
+        const options = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: '2-digit'
+        };
+        const formattedDate = now.toLocaleDateString('id-ID', options);
+        dateElement.textContent = formattedDate;
+      }
     }
 
-    document.getElementById("logout-btn").addEventListener("click", () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
+    window.addEventListener("DOMContentLoaded", () => {
+      setCurrentDate();
     });
   </script>
+</head>
+<body>
+  <div class="flex overflow-hidden flex-col items-start pt-7 pr-2.5 pb-11 pl-9 bg-white rounded-[33px] max-md:pl-5">
+    <div class="flex flex-wrap gap-10 justify-between items-center px-4 max-w-full text-4xl leading-none text-center min-h-[88px] text-zinc-700 w-[517px]">
+      <div id="current-date" class="self-stretch my-auto text-zinc-700"></div>
+      <div class="flex shrink-0 self-stretch my-auto w-6 h-6 bg-black bg-opacity-0"></div>
+    </div>
+
+    <div class="flex flex-wrap justify-center items-start w-full max-w-[1793px] max-md:max-w-full">
+      <div class="text-center">
+        <div class="gap-2.5 max-w-full text-4xl font-bold leading-none text-black w-[335px]">
+          Welcome <span id="username">Amin</span>
+        </div>
+        <div class="gap-2.5 max-w-full text-2xl leading-tight text-zinc-700 w-[335px]">
+          Tasks Done, Days More Productive!
+        </div>
+      </div>
+    </div>
+
+    <div id="task-container" class="flex flex-wrap gap-5 mt-5 w-full px-4">
+      <!-- Task cards will be populated here -->
+    </div>
+
+    <div class="flex gap-2.5 mt-6 w-full px-4">
+      <input type="text" id="new-task" placeholder="New Task" class="flex-grow p-2 rounded-lg border text-black" />
+      <button id="add-task-btn" class="bg-blue-600 text-white p-3 rounded-lg">
+        Add Task
+      </button>
+    </div>
+
+    <a href="index.html" class="absolute top-4 right-4 z-50" id="logout-btn">
+      <img src="https://cdn.builder.io/api/v1/image/assets/ee72701c389648159096232bbc109083/afe35eda761f123a2497466004c02984557cfc69?placeholderIfAbsent=true"
+           class="object-contain w-[32px]" alt="Logout icon" />
+    </a>
+  </div>
 </body>
 </html>

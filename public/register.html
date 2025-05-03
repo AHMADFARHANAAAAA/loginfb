@@ -2,22 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Register Akun</title>
-</head>
-<body>
-  <h2>Halaman Registrasi</h2>
-  <form id="register-form">
-    <input type="text" id="reg-username" placeholder="Username" required />
-    <br><br>
-    <input type="email" id="reg-email" placeholder="Email" required />
-    <br><br>
-    <input type="password" id="reg-password" placeholder="Password" required />
-    <br><br>
-    <button type="submit">Register</button>
-  </form>
-  <br>
-  <button onclick="window.location.href='index.html'">Kembali ke Login</button>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONE-TASK Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
@@ -72,5 +59,56 @@
         });
     });
   </script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&family=Righteous&display=swap" />
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100 font-[Poppins]">
+  <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+    <a href="index.html" class="mb-6" aria-label="Go back">
+      <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="50" height="50" rx="10" fill="#006EE9" />
+        <path d="M36 24.0625H18.5056L26.5413 16.0269L24.5 14L13 25.5L24.5 37L26.5269 34.9731L18.5056 26.9375H36V24.0625Z" fill="white" />
+      </svg>
+    </a>
+
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-blue-600 font-[Righteous]">ONE-TASK</h1>
+      <h2 class="text-xl font-medium text-gray-600">Management App</h2>
+    </div>
+
+    <form id="register-form" class="mt-6 space-y-4">
+      <div class="text-lg font-semibold text-gray-700">Create your account</div>
+
+      <div class="flex items-center gap-2 p-2 bg-blue-600 rounded-md">
+        <div class="w-10 h-10">
+          <svg width="72" height="73" viewBox="18 15 72 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M35.9196 37.9439C38.7397 37.9439 41.1196 38.4022 41.1196 40.1702C41.1196 41.9389 38.7241 42.3809 35.9196 42.3809C33.1001 42.3809 30.7196 41.9226 30.7196 40.1546C30.7196 38.3859 33.1151 37.9439 35.9196 37.9439ZM35.9196 29.3809C37.83 29.3809 39.3607 30.911 39.3607 32.82C39.3607 34.7291 37.83 36.2599 35.9196 36.2599C34.0098 36.2599 32.4785 34.7291 32.4785 32.82C32.4785 30.911 34.0098 29.3809 35.9196 29.3809Z" fill="white" />
+          </svg>
+        </div>
+        <input type="text" id="reg-username" placeholder="Username" required class="w-full p-2 text-white bg-transparent placeholder-white focus:outline-none" />
+      </div>
+
+      <div class="flex items-center gap-2 p-2 bg-blue-600 rounded-md">
+        <div class="w-10 h-10">
+          <svg width="72" height="73" viewBox="18 15 72 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M39.9854 28.4602C41.1029 28.4602 42.1779 28.9019 42.9688 29.6944C43.7604 30.4852 44.2029 31.5519 44.2029 32.6685V39.2519C44.2029 41.5769 42.3113 43.4602 39.9854 43.4602H31.7529C29.4271 43.4602 27.5363 41.5769 27.5363 39.2519V32.6685C27.5363 30.3435 29.4188 28.4602 31.7529 28.4602H39.9854ZM40.9279 32.7935C40.7529 32.7844 40.5863 32.8435 40.4604 32.9602L36.7029 35.9602C36.2196 36.361 35.5271 36.361 35.0363 35.9602L31.2863 32.9602C31.0271 32.7685 30.6688 32.7935 30.4529 33.0185C30.2279 33.2435 30.2029 33.6019 30.3938 33.8519L30.5029 33.9602L34.2946 36.9185C34.7613 37.2852 35.3271 37.4852 35.9196 37.4852C36.5104 37.4852 37.0863 37.2852 37.5521 36.9185L41.3113 33.9102L41.3779 33.8435C41.5771 33.6019 41.5771 33.2519 41.3688 33.0102C41.2529 32.886 41.0938 32.8102 40.9279 32.7935Z" fill="white" />
+          </svg>
+        </div>
+        <input type="email" id="reg-email" placeholder="Email" required class="w-full p-2 text-white bg-transparent placeholder-white focus:outline-none" />
+      </div>
+
+      <div class="flex items-center gap-2 p-2 bg-blue-600 rounded-md">
+        <div class="w-10 h-10">
+          <svg width="72" height="73" viewBox="18 15 72 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M35.8569 27.4536C38.4142 27.4536 40.4719 29.4659 40.4719 31.9503V33.2281C41.9071 33.6761 42.9529 34.9754 42.9529 36.5273V40.6414C42.9529 42.5626 41.3601 44.1203 39.3964 44.1203H32.3436C30.3791 44.1203 28.7863 42.5626 28.7863 40.6414V36.5273C28.7863 34.9754 29.8329 33.6761 31.2673 33.2281V31.9503C31.2758 29.4659 33.3335 27.4536 35.8569 27.4536ZM35.8654 36.9405C35.4589 36.9405 35.1287 37.2635 35.1287 37.661V39.4994C35.1287 39.9052 35.4589 40.2281 35.8654 40.2281C36.2803 40.2281 36.6105 39.9052 36.6105 39.4994V37.661C36.6105 37.2635 36.2803 36.9405 35.8654 36.9405ZM35.8738 28.9028C34.1549 28.9028 32.8536 29.8474 32.8536 31.4952V33.7052H38.8853V31.4952C38.8853 29.8474 37.5868 28.9028 35.8738 28.9028Z" fill="white" />
+          </svg>
+        </div>
+        <input type="password" id="reg-password" placeholder="Password" required class="w-full p-2 text-white bg-transparent placeholder-white focus:outline-none" />
+      </div>
+
+      <button type="submit" class="w-full p-3 mt-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+        Register
+      </button>
+    </form>
+  </div>
 </body>
 </html>
